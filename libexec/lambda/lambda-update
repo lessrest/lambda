@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -e
+[[ $LAMBDA_DEBUG ]] && set -x
+### lambda-update -- turn the current directory into a new function version
+### Usage: lambda update <name>
+[[ $# = 1 ]] || { lambda update --help >&2; exit 1; }
+lambda --with-zip sh -ex -c '
+  aws lambda update-function-code \
+    --function-name="$1" \
+    --zip-file="fileb://$2"
+' -- "$1"

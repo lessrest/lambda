@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -e
+[[ $LAMBDA_DEBUG ]] && set -x
+### lambda-create -- turn the current directory into a new lambda function
+### Usage: lambda create <name>
+[[ $# = 1 ]] || { lambda create --help >&2; exit 1; }
+lambda --with-zip sh -ex -c '
+  aws lambda create-function \
+    --function-name="$1" \
+    --runtime="${LAMBDA_RUNTIME?}" \
+    --handler="${LAMBDA_HANDLER?}" \
+    --role="${LAMBDA_ROLE?}" \
+    --zip-file="fileb://$2"
+' -- "$1"

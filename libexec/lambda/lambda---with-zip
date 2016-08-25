@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+## lambda---with-zip -- create a temporary zip file of the current directory
+## Usage: lambda --with-zip <command> [<args>]
+[[ $1 ]] || { lambda --with-zip --help >&2; exit 1; }
+file=$(mktemp --suffix .zip)
+trap 'rm "$file"' EXIT
+zip -qry - >"$file" .
+"$@" "$file"

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -e
+[[ $LAMBDA_DEBUG ]] && set -x
+### lambda-run -- invoke a lambda function with a string array as input
+### Usage: lambda run <name> <command> [<args>]
+[[ $2 ]] || { lambda run --help >&2; exit 1; }
+for x in "${@:2}"; do jshon+=(-s "$x" -i append); done
+lambda invoke "$1" "$(jshon <<<[] "${jshon[@]}")"

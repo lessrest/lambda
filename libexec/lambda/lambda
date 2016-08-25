@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+set -e
+### lambda -- command-line AWS Lambda client
+### Usage: lambda [<options>] <command> [<args>]
+###    or: lambda <command> --help
+###
+### Manage your AWS Lambda functions from the comfort of your command line.
+###
+### Options:
+###
+###    --handler=<name>     set handler function name (default: `index.main')
+###    --runtime=<runtime>  select AWS Lambda runtime (default: `nodejs4.3')
+optl+=(handler,runtime)
+###    -s, --silent         suppress logging output
+opts+=(sq) optl+=(silent,quiet)
+
+export LAMBDA_BUGS=https://github.com/lessrest/lambda/issues/new
+
+if ! [[ $LAMBDA_INITIALIZED ]]; then
+  export LAMBDA_INITIALIZED=true
+  [[ -e ~/.lambdarc ]] && . ~/.lambdarc
+fi
+
+if [[ $2 = --help ]]; then
+  exec "${0##*/}" help -- "$1"
+elif [[ $1 = -* ]] && which "${0##*/}-$1" &>/dev/null; then
+  exec "${0##*/}-$@"
+fi
+
+args=$(getopt -n ${0##*/} -o "${opts[*]}" -l "${optl[*]}" -- "$@")
+eval set -- $args
+
+while [[ $1 ]]; do
+  case $1 in
+    --)              shift; break;;
+
+    --handler)       export LAMBDA_HANDLER=$2; shift;;
+    --runtime)       export LAMBDA_RUNTIME=$2; shift;;
+
+    -s|--silent)     export LAMBDA_SILENT=true;;
+    -q|--quiet)      export LAMBDA_SILENT=true;;
+
+    *) printf "${0##*/}: internal error: %q\n" "$1"; exit 1
+  esac; shift
+done
+
+export LAMBDA_RUNTIME=${LAMBDA_RUNTIME-nodejs4.3}
+export LAMBDA_HANDLER=${LAMBDA_HANDLER-index.main}
+
+"${0##*/}-${1-help}" "${@:2}"

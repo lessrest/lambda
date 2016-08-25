@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+### lambda-help -- print help about lambda(1) or one of its subcommands
+### Usage: lambda help [<command>]
+###    or: lambda <command> --help
+
+name=${0##*/} name=${name%-help}
+file=${0%-*}${1+-$1}
+header=$(
+  grep -oP '^(\S)\1\1( \K.*)?' "$file" |
+  perl -pe 's/^(\S)\1\1$//'
+)
+
+if ! [[ $header ]]; then
+  sed "s/^/${0##*/}: /" "$file"
+elif [[ $(wc -l <<<"$header") = 1 ]]; then
+  echo "$header"
+else
+  sed 1d <<<"$header"
+fi
+
+[[ $1 ]] && exit
+
+for file in ${0%/*}/$name-*; do
+  if [[ -L $file ]]; then
+    continue
+  elif [[ $file = */$name---* ]]; then
+    special_commands+=("$file")
+  else
+    normal_commands+=("$file")
+  fi
+done
+
+list-commands() {
+  [[ $1 ]] || return
+  grep -hoP "^(\\S)\\1\\1 $name-\\K[^ ]* -- .*" "$@" |
+  sed "s/ -- / /"| while read name label; do
+    printf "   %-14s  %s\n" "$name" "$label"
+  done | LANG=C sort
+}
+
+# cat <<.
+
+# Special commands:
+
+# $(list-commands "${special_commands[@]}")
+# .
+
+cat <<.
+
+Commands:
+
+$(list-commands "${normal_commands[@]}")
+
+.

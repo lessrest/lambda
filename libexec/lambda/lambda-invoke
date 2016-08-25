@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+[[ $LAMBDA_DEBUG ]] && set -x
+### lambda-invoke -- invoke a lambda function with arbitrary JSON as input
+### Usage: lambda invoke <name> <json>
+[[ $# = 2 ]] || { lambda create --help >&2; exit 1; }
+out=$(mktemp)
+trap 'rm "$out"' EXIT
+aws lambda invoke --function-name="$1" --payload="$2" "$out" >/dev/null
+if [[ $(head -c1 "$out") != [\[\{] ]]; then
+  echo "$(jshon -e0 -u <<<"[$(cat "$out")]")"
+elif jshon -k <"$out" | grep &>/dev/null ^errorMessage$; then
+  echo "$(jshon -e errorMessage -u <"$out")"
+else
+  jshon <"$out"
+fi
