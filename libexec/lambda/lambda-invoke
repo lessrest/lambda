@@ -9,8 +9,9 @@ trap 'rm "$out"' EXIT
 aws lambda invoke --function-name="$1" --payload="$2" "$out" >/dev/null
 if [[ $(head -c1 "$out") != [\[\{] ]]; then
   echo "$(jshon -e0 -u <<<"[$(cat "$out")]")"
-elif jshon -k <"$out" | grep &>/dev/null ^errorMessage$; then
+elif jshon -k <"$out" | grep &>/dev/null "^errorMessage$"; then
   echo "$(jshon -e errorMessage -u <"$out")"
+  exit 1
 else
   jshon <"$out"
 fi
