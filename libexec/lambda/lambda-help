@@ -6,7 +6,7 @@
 name=${0##*/} name=${name%-help}
 file=${0%-*}${1+-$1}
 header=$(
-  grep -oP '^(\S)\1\1( \K.*)?' "$file" |
+  ${GREP-grep} -oP '^(\S)\1\1( \K.*)?' "$file" |
   perl -pe 's/^(\S)\1\1$//'
 )
 
@@ -23,8 +23,6 @@ fi
 for file in ${0%/*}/$name-*; do
   if [[ -L $file ]]; then
     continue
-  elif [[ $file = */$name---* ]]; then
-    special_commands+=("$file")
   else
     normal_commands+=("$file")
   fi
@@ -32,18 +30,11 @@ done
 
 list-commands() {
   [[ $1 ]] || return
-  grep -hoP "^(\\S)\\1\\1 $name-\\K[^ ]* -- .*" "$@" |
+  ${GREP-grep} -hoP "^(\\S)\\1\\1 $name-\\K[^ ]* -- .*" "$@" |
   sed "s/ -- / /"| while read name label; do
     printf "   %-14s  %s\n" "$name" "$label"
   done | LANG=C sort
 }
-
-# cat <<.
-
-# Special commands:
-
-# $(list-commands "${special_commands[@]}")
-# .
 
 cat <<.
 
