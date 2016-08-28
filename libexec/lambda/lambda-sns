@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+[[ $LAMBDA_DEBUG ]] && set -x
+### lambda-sns -- invoke a lambda function with an SNS message as input
+### Usage: lambda sns <name> <message>
+[[ $2 ]] || { lambda sns --help >&2; exit 1; }
+lambda invoke "$1" "$(
+  jshon -n {} -n '[]' -n {} -n {} -s "$2" -i Message -i Sns -i 0 -i Records
+)"
