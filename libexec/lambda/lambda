@@ -73,7 +73,7 @@ while [[ $1 ]]; do
   esac; shift
 done
 
-export LAMBDA_RUNTIME=${LAMBDA_RUNTIME-nodejs4.3}
+export LAMBDA_RUNTIME=${LAMBDA_RUNTIME-nodejs6.10}
 export LAMBDA_HANDLER=${LAMBDA_HANDLER-index.main}
 
 "${0##*/}-${1-help}" "${@:2}"
